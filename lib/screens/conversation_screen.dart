@@ -13,8 +13,9 @@ class ConversationScreen extends StatefulWidget {
 
 class _ConversationScreenState extends State<ConversationScreen> {
   final TextEditingController _controller = TextEditingController();
-  List<Map<String, String>> _conversation = [];
+  List<Map<String, dynamic>> _conversation = [];
   bool _loading = false;
+  Map<int, bool> _tappedIndices = {};
 
   Future<void> _getAiResponse(String message) async {
     setState(() {
@@ -26,6 +27,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
     final body = {
       "model": "meta-llama/llama-4-maverick",
+      "n": 3,
       "messages": [
         {
           "role": "system",
@@ -52,26 +54,26 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
-        final reply = decoded['choices'][0]['message']['content'];
+        final replies = List<String>.from(decoded['choices'].map((c) => c['message']['content']));
 
         setState(() {
-          _conversation.add({"user": message, "bot": reply});
+          _conversation.add({"user": message, "botReplies": replies});
         });
 
         final box = Hive.box('conversations');
         box.add({
           'message': message,
-          'reply': reply,
+          'reply': replies,
           'timestamp': DateTime.now().toIso8601String(),
         });
       } else {
         setState(() {
-          _conversation.add({"user": message, "bot": 'Error: ${response.statusCode}'});
+          _conversation.add({"user": message, "botReplies": ['Error: ${response.statusCode}']});
         });
       }
     } catch (e) {
       setState(() {
-        _conversation.add({"user": message, "bot": 'Failed to connect: $e'});
+        _conversation.add({"user": message, "botReplies": ['Failed to connect: $e']});
       });
     } finally {
       setState(() {
@@ -105,23 +107,47 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         ),
                         child: Text("You: ${chat["user"]}"),
                       ),
-                      GestureDetector(
-                        onLongPress: () {
-                          Clipboard.setData(ClipboardData(text: chat["bot"] ?? ""));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("AI reply copied to clipboard")),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.pink[100],
-                            borderRadius: BorderRadius.circular(8),
+                      ...List.generate((chat["botReplies"] as List<String>).length, (i) {
+                        final reply = chat["botReplies"][i];
+                        return GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              _tappedIndices[index * 10 + i] = true;
+                            });
+                            Clipboard.setData(ClipboardData(text: reply));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("AI reply copied to clipboard")),
+                            );
+                            await Future.delayed(const Duration(milliseconds: 200));
+                            setState(() {
+                              _tappedIndices[index * 10 + i] = false;
+                            });
+                          },
+                          onLongPress: () {
+                            Clipboard.setData(ClipboardData(text: reply));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("AI reply copied to clipboard")),
+                            );
+                          },
+                          child: AnimatedScale(
+                            scale: _tappedIndices[index * 10 + i] == true ? 0.95 : 1.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.pink[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text("Option ${i + 1}: $reply"),
+                            ),
                           ),
-                          child: Text("AI: ${chat["bot"]}"),
-                        ),
-                      ),
+                        );
+                      }),
+                      TextButton(
+                        onPressed: _loading ? null : () => _getAiResponse(chat["user"]),
+                        child: const Text("Resend"),
+                      )
                     ],
                   );
                 },
