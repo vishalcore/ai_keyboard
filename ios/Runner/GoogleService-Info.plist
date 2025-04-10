@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>809239239726-j5rqrp8s809ko18p0imle6l105tnigrs.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.809239239726-j5rqrp8s809ko18p0imle6l105tnigrs</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCDN8b27dNAyHymfczEhj0Cx9I6Y6M0D1k</string>
+	<key>GCM_SENDER_ID</key>
+	<string>809239239726</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.vishal.aiKeyboard</string>
+	<key>PROJECT_ID</key>
+	<string>ai-keyboard-assistant-ae0df</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ai-keyboard-assistant-ae0df.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:809239239726:ios:a25c39294e8432631293bf</string>
+</dict>
+</plist>

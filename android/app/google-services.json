@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "809239239726",
+    "project_id": "ai-keyboard-assistant-ae0df",
+    "storage_bucket": "ai-keyboard-assistant-ae0df.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809239239726:android:2a52b0783c2fc51e1293bf",
+        "android_client_info": {
+          "package_name": "com.vishal.aiKeyboard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1XOfWGvpd-lYqNggqEG1NU85f2zL7F_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

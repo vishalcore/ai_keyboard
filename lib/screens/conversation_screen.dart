@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:hive/hive.dart';
+import 'package:flutter/services.dart';
 
 class ConversationScreen extends StatefulWidget {
   const ConversationScreen({super.key});
@@ -12,13 +13,12 @@ class ConversationScreen extends StatefulWidget {
 
 class _ConversationScreenState extends State<ConversationScreen> {
   final TextEditingController _controller = TextEditingController();
-  String? _response;
+  List<Map<String, String>> _conversation = [];
   bool _loading = false;
 
   Future<void> _getAiResponse(String message) async {
     setState(() {
       _loading = true;
-      _response = null;
     });
 
     const apiKey = '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'; // Replace with your real key
@@ -55,7 +55,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
         final reply = decoded['choices'][0]['message']['content'];
 
         setState(() {
-          _response = reply;
+          _conversation.add({"user": message, "bot": reply});
         });
 
         final box = Hive.box('conversations');
@@ -66,12 +66,12 @@ class _ConversationScreenState extends State<ConversationScreen> {
         });
       } else {
         setState(() {
-          _response = 'Error: ${response.statusCode}';
+          _conversation.add({"user": message, "bot": 'Error: ${response.statusCode}'});
         });
       }
     } catch (e) {
       setState(() {
-        _response = 'Failed to connect: $e';
+        _conversation.add({"user": message, "bot": 'Failed to connect: $e'});
       });
     } finally {
       setState(() {
@@ -88,6 +88,46 @@ class _ConversationScreenState extends State<ConversationScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: _conversation.length,
+                itemBuilder: (context, index) {
+                  final chat = _conversation[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text("You: ${chat["user"]}"),
+                      ),
+                      GestureDetector(
+                        onLongPress: () {
+                          Clipboard.setData(ClipboardData(text: chat["bot"] ?? ""));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("AI reply copied to clipboard")),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.pink[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text("AI: ${chat["bot"]}"),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _controller,
               decoration: const InputDecoration(
@@ -111,19 +151,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   ? const CircularProgressIndicator()
                   : const Text('Get AI Reply'),
             ),
-            const SizedBox(height: 24),
-            if (_response != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.pinkAccent),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _response!,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
           ],
         ),
       ),
